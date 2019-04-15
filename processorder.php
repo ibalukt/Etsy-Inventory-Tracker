@@ -8,83 +8,56 @@
     
     if (isset($_POST['update']))
     {
+
+        //__TACTION TABLE__#########################################################################################
         //$id = $crud->escape_string($_POST['']);
         //echo "$id";
 
-        $table = "Taction";
-    
-        $query ="SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table'";
-        //an array to store the column names
-        $column_name = $crud->getData($query);
+        //$table = "Taction";
+
+        //get the array of column names from the TACTION TABLE
+        $column_name = $crud->getCols("TAction");
         //cols is the array that will contain the simplified column names EXAMPLE: ItemID, ItemName, UnitPrice, etc.
-        $cols = array();
+        $columns = array();
         //vals is the array that will contain the values for each of the column names. EXAMPLE: 1, Journal, 20.00, etc.
-        $vals = array();
+        $values = array();
     
     
         foreach ($column_name as $key => $col)
         {
             //parse through the array and append the column names into the $cols array
-            array_push($cols,$col['COLUMN_NAME']);
+            array_push($columns,$col);
             //for each column add the corresponding value to the vals array
             //If the column name is in the post and is set then
-            if (isset($_POST[$cols[$key]]))
+            if (isset($_POST[$columns[$key]]))
             {
                 //Append the value to the vals array
-                array_push($vals,$crud->escape_string($_POST[$cols[$key]]));
+                array_push($values,$crud->escape_string($_POST[$columns[$key]]));
             }
             else
             {
-                //If the column name is the post is not set then append "N/A" to the array
-                array_push($vals,"N/A");
+                //If the column name in the post is not set then append "N/A" to the array
+                array_push($values,"N/A");
             }
             //DEBUG: echo $cols[$key] . ":" . $vals[$key] . "<br>" ;
     
         }
-    
-        //Start building the INSERT query
-        $query = "INSERT INTO $table";
-        // the id will store the value of the ItemID or ORDERID
-        $id = null;
-        //Middle part of query
-        $middle = null;
-        //Ending of the query
-        $end = null;
-        foreach($cols as $key => $col)
-        {
-            //This stores the id, because you are not updating the value of the ID
-            if ($key == 0)
-            {
-                //$id = $vals[$key];
-                $middle = "(";
-                $end = "VALUES (";
-            }
-            //This elseif gets rid of the comma at the end of the statement and adds the Corresponding WHERE statement to the end
-            elseif($key == (sizeof($cols)-1))
-            {
-                $middle = $middle . "$cols[$key])";
-                $end = $end . "'$vals[$key]')";
-            }
-            //This is the normal statemetn that adds the new value to the column name. Example ItemName='Journal'
-            else
-            {
-                $middle = $middle . "$cols[$key],";
-                $end = $end . "'$vals[$key]',";
-            }
-        }
 
-        //This is the query to put correct values into TAction
-        $TAction_Query = $query . $middle . $end;
-        //echo $TAction_Query;
+        //Build the query that we are going to use to insert the new transaction into the TAction table
+        $query = $crud->buildQuery("TAction",$columns,$values);
+        //Execute the query that we just built.
+        //echo $query;
+        $result = $crud->execute($query);
 
-        $result = $crud->execute($TAction_Query);
 
-        //TACTION ITEM------------------------------------------------------------------------------------------------
+        //__TACTIONITEM_TABLE__####################################################################################
 
         //--1.---------------------------GET COLUMN NAMES TActionItem & Inventory---------------------------------
 
+        //NOTE getCols returns the column names of the table that is given
         $TActionItem_Cols = $crud->getCols("TActionItem");
         $Inventory_Cols = $crud->getCols("Inventory");
+
         //--2.---------------------GET TActionID OF THE LAST ITEM INSERTED INTO THE TACTION TABLE------------------
 
         //This is the query to get the TActionID of the item you just inserted into the DB.
@@ -100,107 +73,88 @@
 
         //For each TActionItem Column Name
         foreach ($TActionItem_Cols as $key => $TIcol)
-        {
+        {   
             //For each Inventory Column Name
             foreach ($Inventory_Cols as $key => $Icol)
             {
-                //If one of the Transacion Item Columns is set in the Post from the form (picks up Qty)
-                //if (isset($_POST[$TIcol]))
-                //{
-                    //clear it of any non allowed symbols / characters
-                    //$v= $crud->escape_string($_POST[$TIcol]);
-                    //push the column names into the TActionITem Column Name into the common_fields array
-                    //array_push($common_fields,$TIcol);
-                    //push the value retrieved from the post request into the values field
-                    //array_push($values,$v);
-                    //The break statement is present so that common field values are not duplicated.
-                    //break;
-                //}
                 //If the TActionItem ColumnName is equal to the Inventory Column Name 
                 if ($TIcol == $Icol)
                 {
                     //Push the common Column Name into the common fields array()
                     array_push($common_fields,$Icol);
-                    //Push the value of the Items[Common Field] into the $values array.
-                    //array_push($values,$items[0][$Icol]);
-                    //Break statement is present so that there will not be any duplicate values
-                    break;
                 }
             }
         }
-        //echo print_r($common_fields) ;
 
-        //--4.----------------------------------GET THE ITEMS/QTY FOR THE TRANSACTION--------------------------------
+        //--4.---------------------GET Number of Items that User Enter for Transaciton ------------------------ 
+        //Read the number of items that need to be inserted into the TAction Table
+        $num_items = $crud->escape_string($_POST['num_items']);
 
-        //get the Item ID of the item selected in the form 
-        $ItemID=$crud->escape_string($_POST['ItemID']);
-        //get the number of a particular item in the transaction
-        $Qty=$crud->escape_string($_POST['Qty']);
-        
-        $query = "SELECT * FROM inventory WHERE ItemID = '$ItemID'";
+        //--5.---------------------Redefine the $columns array for future use -----------------------------------
 
-        //Get the data that the query returns
-        $items = $crud->getData($query);
+        //redfine the columns array for the next part of the operations.
+        $columns = null;
+        $columns = array();
+        $columns = $common_fields;
+        //DEBUG: echo print_r($columns);
+        //Set the first index of the common_fields array to the TActionID
+        array_unshift($columns,"TActionID");
+        //Add a Quantity field to the end of the common_fields array
+        array_push($columns,"Qty");
 
-        //--5.--------------------------------LOOP THROUGH THE COMMON FIELDS AND GET ITEM VALUES------------------- 
-
-        $values = array();
-        foreach ($items as $key => $item)
+        //--6.--------------------Insert all of the items from the Transacition----------------------------------
+        //For every time that $i is less than the number of items being processed in the last page
+        for ($i=0;$i<$num_items;$i++)
         {
-            foreach ($common_fields as $field)
+            //set the initial value of the $values array to null.
+            $values = null;
+            //turn the $values variable into an array;
+            $values = array();
+            //Set the first value of the $values array to the ID that you just inserted for the transaction
+            array_unshift($values,$TActionID);
+            //get the ItemID for the first item by adding ItemID to the $i+1
+            $ItemID = $crud->escape_string($_POST['ItemID'.($i+1)]);
+            //do the same for the Qty field
+            $Qty = $crud->escape_string($_POST['Qty'.($i+1)]);
+            
+            //query the database for the item info that we are adding to TActionID
+            $Item_Q = "SELECT * FROM Inventory WHERE ItemID ='$ItemID'";
+            
+            //get the item
+            $item = $crud->getData($Item_Q);
+            //sort through each of the fields returned for the item
+            foreach ($columns as $key => $column)
             {
-                //Add the item value to the field
-                array_push($values, $item[$field]);
+                //if the array key exists in the $common_fields array, then add the value of that key from item 
+                //into the values array. This if statement catches when Qty is not a key in the Inventory table.
+                if (array_key_exists($column,$item[0]))
+                {
+                    array_push($values,$item[0][$column]);
+                }
             }
+            //Add the $Qty value to the end of the value array
+            array_push($values,$Qty);
+
+            //DEBUG: echo print_r($common_fields);
+            //DEBUG: echo print_r($values);
+            
+            //Use one of the crud functions to build the query. Parameters: Table Name, The columns being inserted, the values
+            $query = $crud->buildQuery("TActionItem",$columns,$values);
+            //DEBUG echo $query . "<br>";
+            
+            $result=$crud->execute($query);
+
+            //--UPDATE Item's QtyAvailable field in Inventory
+            $Qty = ($item[0]['QtyAvailable'] - $Qty);
+            
+            $query = "UPDATE Inventory SET QtyAvailable = '$Qty' Where ItemID = '$ItemID'";
+
+            $result=$crud->execute($query);          
+
         }
-        //--.6----------------------------------ADD OTHER FIELDS and ADD THIER VALUES------------------------
-        //Add TActionID to the Beginning of the common Fields array
-        array_unshift($common_fields,'TActionID');
-        //Add the Last TActionID to the beginning of the values array
-        array_unshift($values, $TActionID);
+        //__Inventory####################################################################################################
 
-        //Add the Qty field to the common fields array
-        array_push($common_fields,'Qty');
-        //Add the Qty value to the values array
-        array_push($values, $Qty);
-
-        //Total charge is equal to values[2](UnitPrice) X values[3](Qty);
-        $TotalCharge = $values[2]*$values[3];
-
-        //Add Total Charge to the common fields
-        array_push($common_fields,'TotalCharge');
-        array_push($values, $TotalCharge);
-
-        echo print_r($common_fields);
-        echo print_r($values);
-
-        $TActionItem_Q = "INSERT INTO TACTIONITEM";
-        foreach($common_fields as $key => $field)
-        {
-            if ($key == 0)
-            {
-                $middle = "(".$field.",";
-                $end = "VALUES ('$values[$key]',";
-            }
-            elseif($key == (sizeof($common_fields)-1))
-            {
-                $middle = $middle . $field . ")";
-                $end = $end ."'$values[$key]')";
-            }
-            else
-            {
-                $middle = $middle . $field . ",";
-                $end = $end . "'$values[$key]',";
-            }
-        }
-        $TActionItem_Q .= ($middle . $end); 
-
-        echo $TActionItem_Q;
-
-        $result=$crud->execute($TActionItem_Q);
         header("Location: details.php?table=tactionitem");
-        
-        
     }
     else
     {

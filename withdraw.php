@@ -6,10 +6,13 @@
     
     //$table = $crud->escape_string($_GET['table']);
 
+
+    //query to get the ItemIDs, ItemNames, Prices, and Quantities for the items. This will be so we can put the items into 
+    //a dropdown for the user to pick from
     $query = "SELECT ItemID,ItemName,UnitPrice,QtyAvailable FROM Inventory";
-
+    //get the data
     $items = $crud->getData($query);
-
+    //Add the itemNames and IDS to an empty array
     $itemNames = array();
     $itemIDs = array();
     
@@ -18,8 +21,30 @@
         array_push($itemNames,$item['ItemName']);
         array_push($itemIDs,$item['ItemID']);
     }
-    
+
+    //This query will get the transaction types from the db so we can choose from one.
+    $query = "SELECT * FROM TActionType";
+    //get the transaction type information
+    $types = $crud->getData($query);
+
+
+
+
+
+    $date = getdate();
+    $day = $date['mday'];
+    $month = $date['mon'];
+    $year = $date['year'];
+    $today = "$year-$month-$day";
     //echo print_r($itemNames);
+
+    $itemlist = "";
+    foreach($itemNames as $key=>$itemName)
+    {
+        $itemlist .= "<option value='$itemIDs[$key]'>$itemName</option>";
+        
+    }
+
 
 ?>
 <html>
@@ -31,19 +56,36 @@
         <a href="details.php?table=<?php echo $table;?>"> Home </a>
         <br/><br/>
         <form name="form1" method="post" action="processorder.php">
-            <label for="ItemName">Which item are you removing from inventory?</label><br/>
-            <select name="ItemID">
-                <?php
-                    foreach($itemNames as $key=>$itemName)
-                    {
-                        echo "<option value='$itemIDs[$key]'>$itemName</option>";
-                    }
-                ?>
+
+            <select>
+            <?php
+               /* foreach ($types as $type)
+                {
+                    echo "<option value='$type['TypeID']'> $type['TypeID'] </option>"; 
+                }*/
+            ?>
             </select>
+
+            <div id="itemSelect">
+            <input type="hidden" name="num_items" id="num_items" value="1" />
+            <label for="ItemName">Which item are you removing from inventory?</label><br/>
+            <?php
+
+                echo " <select name='ItemID1'>";
+                echo  $itemlist;    
+                echo "</select>";
+                echo "<label for='Qty1'>How Many? </label> ";
+                echo "<input type='number' name='Qty1' value='1' min='1' style='width:60px;'/>";
+            ?>
+            </div>
+
+            <button type="button" onclick="myFunction()" >Add Item</button>
             <br/>
-            <label for="Qty">How Many? </label> <br/>
-            <input type="number" name="Qty" value="1" min="1" style="width:60px;"/>
             <br/>
+            <br/>
+            <br/>
+            <br/>
+            <input type="hidden" name="TActionDate" value="<?php echo $today; ?>" />
             <label for="FirstName" >First Name</label><br/>
             <input type="textbox" name="FirstName" /><br/>
             <label for="LastName" >Last Name </label><br/>
@@ -110,5 +152,47 @@
 
             <input type="submit" name="update" value="Update">
         </form>
+
+    
+
+        <script>
+            var number_of_items = 1;
+
+            function myFunction() {
+                number_of_items++;
+                //set up the initial container
+                var div = document.createElement("DIV");
+                //set of the id for the container so we can delete it if we want
+                div.id = "div"+number_of_items;
+                //append the new div to the itemSelect div
+                document.getElementById("itemSelect").appendChild(div);
+
+                //create a new select
+                var select = document.createElement("SELECT");
+                //create the options
+                var option = "<?php echo $itemlist; ?>";
+                select.id="ItemID"+number_of_items;
+                select.name="ItemID"+number_of_items;
+                select.innerHTML = option;
+                document.getElementById("div"+number_of_items).appendChild(select);
+
+                //create the label
+                var label = document.createElement("LABEL");
+                label.for = "Qty"+number_of_items;
+                label.id = "Qty"+number_of_items;
+                label.innerHTML ="How Many?";
+                //create the quantity input
+                var input = "<input type='number' name='Qty"+number_of_items+"' value='1' min='1' style='width:60px;' />"
+
+                document.getElementById("div"+number_of_items).appendChild(label);
+                document.getElementById("div"+number_of_items).innerHTML += input;
+
+                num_items.value=number_of_items;
+
+                //create the delete button
+                div.innerHTML += "<button type='button'" + "onClick='(div"+number_of_items+".remove());number_of_items--; console.log(number_of_items); num_items.value=number_of_items;'>Delete</button>";
+                console.log(number_of_items);
+            }
+        </script>
     </body>
 </html>

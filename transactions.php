@@ -3,17 +3,19 @@
 include_once("classes/Crud.php");
 //include an instance of the crud methods so they are available for use
 $crud = new Crud();
-//get the table that will be used to load the pages data.
-$table = $crud->escape_string($_GET['table']);
 
-$cols = $crud->getCols($table);
-//DEBUG echo print_r($cols, true);
+//This info is HARD CODED. If you alter the table names or Columns, this all must be redone.
+$columns = array("TActionDate","FirstName","LastName","ItemName","Qty","TotalCharge");
 
 //echo print_r($cols);
-//fetch the data from the database
-$query = "SELECT * FROM $table ORDER BY $cols[0] DESC";
+//This query will output the Transaction date, First Name, Last Name, Quantity, And Total Charge of the Order
+$query = "SELECT TA.TActionDate,TA.FirstName,
+          TA.LastName,I.ItemName,TAItem.Qty,TAItem.TotalCharge
+          FROM TActionItem TAItem JOIN Inventory I ON TAItem.ItemID = I.ItemID JOIN TAction TA ON TAItem.TActionID = TA.TActionID";
 //get all the data from the query above and store it into the $result variable
 $result = $crud->getData($query);
+
+//echo print_r($result);
 ?>
 
 <!DOCTYPE html>
@@ -37,12 +39,11 @@ $result = $crud->getData($query);
                     <tr>
                         <?php
                             //create the table headings for each column of the table
-                            foreach($cols as $value)
+                            foreach($columns as $value)
                             {
                                 echo "<th>".$value ."</th>";
                             }
                         ?>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,16 +55,12 @@ $result = $crud->getData($query);
                         {
                             echo "<tr>";   
                             //create a column for every column in the table and put the result inside of it
-                            foreach($cols as $value)
+                            foreach($columns as $value)
                             { 
                                 echo "<td>".$res[$value]."</td>";
                             }
-                            //For Every Item in the results create and edit and delete button.
-                            echo "<td> <a href='edit.php?table=".$table."&id=".$res[$cols[0]]."'>Edit</a> |".
-                            " <a onclick='confirm('Are you sure that you want to delete?'); "." <a href='delete.php?table=".$table."&id=".$res[$cols[0]]."'>Delete</a>"."</td>";
                         }
                     ?>
-                    <!----------------\"delete.php?id=$res[id]\"--LOOP ENDS-------------------->
                     </tr>
                 </tbody>
             </table>

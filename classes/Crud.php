@@ -82,4 +82,33 @@ class Crud extends DbConfig
 
         
     }
+
+    public function buildQuery($targetTable,$columns,$values)
+    {
+        $beginning ="INSERT INTO $targetTable";
+        $middle = "";
+        $end = "";
+        foreach($columns as $key => $column)
+        {
+            if ($key == 0)
+            {
+                $middle = "(".$column.",";
+                $end = "VALUES ('$values[$key]',";
+            }
+            elseif($key == (sizeof($columns)-1))
+            {
+                $middle = $middle . $column . ")";
+                $end = $end ."'$values[$key]')";
+            }
+            else
+            {
+                $middle = $middle . $column . ",";
+                $end = $end . "'$values[$key]',";
+            }
+        }
+        $query = $beginning . $middle . $end;
+        
+        return $query;
+
+    }
 }
