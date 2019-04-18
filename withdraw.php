@@ -49,11 +49,79 @@
 ?>
 <html>
     <head>
-        <title></title>
-    </head>
-
+        <title>Bootstrap Example</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        </head>
     <body>
         <a href="details.php?table=<?php echo $table;?>"> Home </a>
+
+
+        <div class="container-fluid">
+        <div class="row">
+            <div id="demo" class="carousel slide col-sm-12" data-interval="false" data-ride="none">
+        
+                <!-- The slideshow -->
+                <div class="carousel-inner">
+                    <form  method="post" action="processorder.php" style="height:200px; border:2px solid purple;">
+                        <!--  Hidden Fields -->
+                        <input type="hidden" name="num_items" id="num_items" value="1" />
+                        <input type="hidden" name="TActionDate" value="<?php echo $today; ?>" />
+                        <div class="carousel-item  active" style="border:2px solid red;height:100%;" >
+                            <!-- ItemName -->
+                            <div class="form-group mt-5" style="width:500px;border:2px solid green; margin:auto;">
+                                <label for="ItemName">What is the name of the new item?</label><br/>
+                                <select class="form-control" name='ItemID1'>
+                                    <?php echo $itemlist; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="carousel-item" style="border:2px solid red; height:100%;" >
+                            <!-- Qty -->
+                            <div class="form-group mt-5" style="width:500px;border:2px solid green; margin-left:auto; margin-right:auto;">
+                                <label for='Qty1'>How Many Of this Item? </label> ;
+                                <input type='number'class="form-control" id='Qty' name='Qty1' value='1' min='1' onchange='calculateCost();' style='width:60px; '/>
+                            </div>
+                        </div>
+                        <div class="carousel-item" style="border:2px solid red; height:100%;" >
+                            <!-- Company -->
+                            <div class="form-group mt-5" style="width:500px;border:2px solid green; margin-left:auto; margin-right:auto;">
+                                <label for="Company"> Who produced / manufactured these items? </label><br/>
+                                <input type="textbox" class="form-control" name="Company" placeholder="company" >
+                            </div>
+                        </div>
+                        <div class="carousel-item" style="border:2px solid red; height:100%;" >
+                            <!-- Explanation -->
+                            <div class="form-group mt-5" style="width:500px;border:2px solid green; margin-left:auto; margin-right:auto;">
+                                <label for="Explanation"> Any Further Notes for this Transaction? </label>
+                                <input type="text" class="form-control" name="Explanation" /><br/>
+                                <input type="submit" name="update" value="Update">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-1 text-center">
+            <a class="bg-dark ml-auto" href="#demo" data-slide="prev">
+                <span class="carousel-control-prev-icon bg-dark"></span>
+            </a>
+        </div>
+        <div class="col-sm-10"></div>
+        <div class="col-sm-1 text-center">
+            <a class=" bg-dark mr-auto" href="#demo" data-slide="next">
+                <span class="carousel-control-next-icon bg-dark"></span>
+            </a>
+        </div>
+    </div>
+
         <br/><br/>
         <form name="form1" method="post" action="processorder.php">
 
@@ -75,7 +143,8 @@
                 echo  $itemlist;    
                 echo "</select>";
                 echo "<label for='Qty1'>How Many? </label> ";
-                echo "<input type='number' name='Qty1' value='1' min='1' style='width:60px;'/>";
+                //Make the value a negative number for a withdrawl and a positive number for a deposit
+                echo "<input type='number' name='Qty1' value='-1' max='-1' style='width:60px;'/>";
             ?>
             </div>
 

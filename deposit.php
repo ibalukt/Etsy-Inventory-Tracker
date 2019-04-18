@@ -8,7 +8,7 @@ $crud = new Crud();
 
 //query to get the ItemIDs, ItemNames, Prices, and Quantities for the items. This will be so we can put the items into 
 //a dropdown for the user to pick from
-$query = "SELECT ItemID,ItemName,UnitPrice,QtyAvailable FROM Inventory";
+$query = "SELECT ItemID,ItemName,UnitPrice,UnitCost,QtyAvailable FROM Inventory";
 //get the data
 $items = $crud->getData($query);
 //Add the itemNames and IDS to an empty array
@@ -22,9 +22,9 @@ foreach ($items as $key => $item)
 }
 
 //This query will get the transaction types from the db so we can choose from one.
-$query = "SELECT * FROM TActionType";
+//$query = "SELECT * FROM TActionType";
 //get the transaction type information
-$types = $crud->getData($query);
+//$types = $crud->getData($query);
 
 
 
@@ -47,28 +47,49 @@ foreach($itemNames as $key=>$itemName)
 <html>
     <head>
         <title></title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     </head>
 
     <body>
+
+    
         <a href="details.php?table=<?php echo $table;?>"> Home </a>
         <br/><br/>
-        <form name="form1" method="post" action="additem.php">
+        <form name="form1" method="post" action="processorder.php">
 
             <div id="itemSelect">
             <input type="hidden" name="num_items" id="num_items" value="1" />
             <label for="ItemName">Which item are you depositing into inventory?</label><br/>
-            <?php
+            <input type="textbox" name="ItemName" />
+            <input type='number'id='Qty' name='QtyAvailable' value='1' min='1' onchange='calculateCost();' style='width:60px; '/>
+            <input type="hidden" name="new" value="1">
+            <!--<?php
 
-                echo " <select name='ItemID'>";
+                echo " <select name='ItemID1'>";
                 echo  $itemlist;    
                 echo "</select>";
-                echo "<label for='Qty'>How Many Of this Item? </label> ";
-                echo "<input type='number' name='Qty' value='1' min='1' style='width:60px;'/>";
-            ?>
+                echo "<label for='Qty1'>How Many Of this Item? </label> ";
+                echo "<input type='number'id='Qty' name='Qty1' value='1' min='1' onchange='calculateCost();' style='width:60px; '/>";
+            ?>-->
             </div>
 
-            <label for="TotalCharge">What was the total cost to produce these items?</label>
-            <input type="textbox" name="TotalCharge">
+            <label for="ProductionCost"> How much did the manufacturer charge you to produce these items? </label>
+            <input type="textbox" id="ProductionCost" name="ProductionCost" onkeypress="calculateCost();"  onchange="calculateCost();" /> 
+            <br/>
+            <label for="ShippingFee">Was there a fee to have these items shipped?</label>
+            <input type="textbox" id="ShippingFee" name="ShippingFee" onkeypress="calculateCost();" onchange="calculateCost();"/>
+            <br/>
+
+            <label for="UnitCost">The cost per unit works out to be </label>
+            <input type="textbox" id="UnitCost" name="UnitCost"  />
+            <br/>
+
+            <label for="UnitPrice"> How much will you sell these items for? </label>
+            <input type="textbox" name="UnitPrice">
+            <br/>
 
             <input type="hidden" name="TActionDate" value="<?php echo $today; ?>" />
 
@@ -139,3 +160,20 @@ foreach($itemNames as $key=>$itemName)
 
             <input type="submit" name="update" value="Update">
         </form>
+
+        <script>
+            function calculateCost()
+            {
+                var ProductionCost = parseInt(document.getElementById('ProductionCost').value);
+                var ShippingFee = parseInt(document.getElementById('ShippingFee').value);
+                var Qty = parseInt(document.getElementById('Qty').value);
+
+                var Cost = ((ProductionCost + ShippingFee) / Qty).toFixed(2);
+                
+                document.getElementById('UnitCost').value = Cost;
+                //document.getElementById('UnitCost').innerHTML = Cost;
+                
+            }
+        </script>
+</body>
+</html>

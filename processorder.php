@@ -8,48 +8,15 @@
     
     if (isset($_POST['update']))
     {
-
-        //__TACTION TABLE__#########################################################################################
-        //$id = $crud->escape_string($_POST['']);
-        //echo "$id";
-
-        //$table = "Taction";
-
-        //get the array of column names from the TACTION TABLE
-        $column_name = $crud->getCols("TAction");
-        //cols is the array that will contain the simplified column names EXAMPLE: ItemID, ItemName, UnitPrice, etc.
-        $columns = array();
-        //vals is the array that will contain the values for each of the column names. EXAMPLE: 1, Journal, 20.00, etc.
-        $values = array();
-    
-    
-        foreach ($column_name as $key => $col)
+        if (isset($_POST['new']))
         {
-            //parse through the array and append the column names into the $cols array
-            array_push($columns,$col);
-            //for each column add the corresponding value to the vals array
-            //If the column name is in the post and is set then
-            if (isset($_POST[$columns[$key]]))
-            {
-                //Append the value to the vals array
-                array_push($values,$crud->escape_string($_POST[$columns[$key]]));
-            }
-            else
-            {
-                //If the column name in the post is not set then append "N/A" to the array
-                array_push($values,"N/A");
-            }
-            //DEBUG: echo $cols[$key] . ":" . $vals[$key] . "<br>" ;
-    
+            $crud->performOperation("INSERT INTO","Inventory");
         }
 
-        //Build the query that we are going to use to insert the new transaction into the TAction table
-        $query = $crud->buildQuery("TAction",$columns,$values);
-        //Execute the query that we just built.
-        //echo $query;
-        $result = $crud->execute($query);
+        //__TACTION TABLE__#########################################################################################
 
-
+        $crud->performOperation("INSERT INTO","TAction");
+ 
         //__TACTIONITEM_TABLE__####################################################################################
 
         //--1.---------------------------GET COLUMN NAMES TActionItem & Inventory---------------------------------
@@ -106,22 +73,40 @@
         //For every time that $i is less than the number of items being processed in the last page
         for ($i=0;$i<$num_items;$i++)
         {
+            
             //set the initial value of the $values array to null.
             $values = null;
             //turn the $values variable into an array;
             $values = array();
             //Set the first value of the $values array to the ID that you just inserted for the transaction
             array_unshift($values,$TActionID);
-            //get the ItemID for the first item by adding ItemID to the $i+1
-            $ItemID = $crud->escape_string($_POST['ItemID'.($i+1)]);
-            //do the same for the Qty field
-            $Qty = $crud->escape_string($_POST['Qty'.($i+1)]);
+            //get the ItemID for the first item by adding ItemID to the $i+1. If the itemID is not there, use the 
+            //last one that we inserted. This is for adding items.
+            if (isset($_POST['new']))
+            {
+                $query = "SELECT LAST_INSERT_ID() FROM TAction";
+                $get_id = $crud->getData($query);
+                $ItemID = $get_id[0]['LAST_INSERT_ID()'];
+                $Qty = $crud->escape_string($_POST['QtyAvailable']);
+
+            }
+            else
+            {
+                $ItemID = $crud->escape_string($_POST['ItemID'.($i+1)]);
+                //do the same for the Qty field
+                $Qty = $crud->escape_string($_POST['Qty'.($i+1)]);
+                //ELSE ONLY TAKES PLACE WHEN THERE IS A NEW ITEM BEING ADDED TO INVENTORY
+            }
+
             
             //query the database for the item info that we are adding to TActionID
             $Item_Q = "SELECT * FROM Inventory WHERE ItemID ='$ItemID'";
             
             //get the item
             $item = $crud->getData($Item_Q);
+
+            echo print_r($columns);
+
             //sort through each of the fields returned for the item
             foreach ($columns as $key => $column)
             {
@@ -129,32 +114,46 @@
                 //into the values array. This if statement catches when Qty is not a key in the Inventory table.
                 if (array_key_exists($column,$item[0]))
                 {
-                    array_push($values,$item[0][$column]);
+                    array_push($values,$item[0][$column]); 
                 }
             }
             //Add the $Qty value to the end of the value array
             array_push($values,$Qty);
 
             //DEBUG: echo print_r($common_fields);
-            //DEBUG: echo print_r($values);
+            echo print_r($values);
             
             //Use one of the crud functions to build the query. Parameters: Table Name, The columns being inserted, the values
-            $query = $crud->buildQuery("TActionItem",$columns,$values);
+            $query = $crud->buildQuery("TActionItem","INSERT INTO",$columns,$values);
             //DEBUG echo $query . "<br>";
             
             $result=$crud->execute($query);
-
-            //--UPDATE Item's QtyAvailable field in Inventory
-            $Qty = ($item[0]['QtyAvailable'] - $Qty);
             
-            $query = "UPDATE Inventory SET QtyAvailable = '$Qty' Where ItemID = '$ItemID'";
+            if (!isset($_POST['new']))
+            {
 
-            $result=$crud->execute($query);          
+                $Qty = $Qty + $item[0]['QtyAvailable'];
+                //--UPDATE Item's QtyAvailable field in Inventory
+                if (isset($_POST['UnitCost']))
+                {
+                    $UnitCost = $crud->escape_string($_POST['UnitCost']);
+                }
+                else
+                {
+                    $UnitCost = $item[0]['UnitCost'];
+                }
+                
+                $query = "UPDATE Inventory SET QtyAvailable = '$Qty',UnitCost = '$UnitCost'  Where ItemID = '$ItemID'";
+
+                echo $query;
+
+                $result=$crud->execute($query);      
+            }    
 
         }
         //__Inventory####################################################################################################
 
-        header("Location: details.php?table=tactionitem");
+        //header("Location: details.php?table=tactionitem");
     }
     else
     {

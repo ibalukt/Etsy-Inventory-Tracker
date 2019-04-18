@@ -12,8 +12,10 @@
         //echo "$id";
     
         $table = $crud->escape_string($_POST['table']);
+
+        $crud->performOperation("INSERT INTO",$table);
     
-        $query ="SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table'";
+        /*$query ="SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table'";
         //an array to store the column names
         $column_name = $crud->getData($query);
         //cols is the array that will contain the simplified column names EXAMPLE: ItemID, ItemName, UnitPrice, etc.
@@ -67,7 +69,8 @@
         $query = $query . $middle . $end;
         echo $query;
 
-        $result = $crud->execute($query);
+        $result = $crud->execute($query);*/
+
         header("Location: details.php?table=$table");
     }
 

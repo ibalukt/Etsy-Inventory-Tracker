@@ -18,6 +18,8 @@
         //parse through the array and append  the datatypes into the dtypes array
         array_push($dtypes,$col['DATA_TYPE']);
     }
+
+    $today = $crud->today();
 ?>
 <html>
     <head>
@@ -60,8 +62,8 @@
                                                     <input type='number' name='$cols[$key]' value=''/> </br>
                                                 "; break;
                             case "date" :echo   "
-                                                    <label for='$cols[$key]'> $cols[$key] </label>
-                                                    <input type='date' name='$cols[$key]' value=''/> </br>
+                                                    <!--<label for='$cols[$key]'> $cols[$key] </label>-->
+                                                    <input type='hidden' name='$cols[$key]' value='$today'/> </br>
                                                 "; break;
                             //the default is a text input
                             default :   "
@@ -73,6 +75,19 @@
                 }
             //---------------------------------------END OF THE FOREACH LOOP----------------------------- 
             ?>
+            <!--
+            <h5> Who did you recieve these items from? </h5>
+            <label for="FirstName" >FirstName</label><br/>
+            <input type="textbox" name="FirstName" /><br/>
+            <label for="LastName" >Last Name </label><br/>
+            <input type="textbox" name="LastName" />
+            <br/>
+            <label for="Company"> What company did you recieve these items from? </label><br/>
+            <input type="textbox" name="Company" >
+            <br/>
+            <label for="Explanation">Notes </label><br/>
+            <input type="text" name="Explanation" /><br/>-->
+
             <input type="submit" name="update" value="Update" />
         </form>
     </body>

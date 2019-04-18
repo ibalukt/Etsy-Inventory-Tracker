@@ -12,8 +12,9 @@ if (isset($_POST['update']))
     //echo "$id";
 
     $table = $crud->escape_string($_POST['table']);
+    $crud->performOperation("UPDATE",$table);
 
-    $query ="SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table'";
+    /*$query ="SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table'";
     //an array to store the column names
     $column_name = $crud->getData($query);
     //cols is the array that will contain the simplified column names EXAMPLE: ItemID, ItemName, UnitPrice, etc.
@@ -38,7 +39,7 @@ if (isset($_POST['update']))
     // the id will store the value of the ItemID or ORDERID
     $id = null;
 
-    foreach($cols as $key => $col)
+   /* foreach($cols as $key => $col)
     {
         //This stores the id, because you are not updating the value of the ID
         if ($key == 0)
@@ -57,8 +58,11 @@ if (isset($_POST['update']))
             $query = $query . "$cols[$key]='$vals[$key]',";
         }
     }
-    //DEBUG: echo $query;
-    $result = $crud->execute($query);
+    
+
+    $query = $crud->buildQuery($table,"UPDATE",$cols,$vals);
+    echo $query;
+    $result = $crud->execute($query);*/
     header("Location: details.php?table=$table");
 }
 
