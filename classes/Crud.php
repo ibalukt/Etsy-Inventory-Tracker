@@ -33,7 +33,7 @@ class Crud extends DbConfig
                 else
                 {
                     //If the column name in the post is not set then append "N/A" to the array
-                    array_push($values,"N/A");
+                    array_push($values,null);
                 }
                 //DEBUG: echo $cols[$key] . ":" . $vals[$key] . "<br>" ;
         
