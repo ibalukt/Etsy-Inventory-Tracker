@@ -75,7 +75,7 @@ class Crud extends DbConfig
         $result = $this->connection->query($query);
         
         if ($result == false) {
-            echo 'Error: cannot execute the command';
+            echo 'Error: cannot execute the command <br/>';
             return false;
         }
         else
@@ -172,6 +172,11 @@ class Crud extends DbConfig
         
         return $query;
 
+    }
+
+    public function close()
+    {
+        mysqli_close($connection);
     }
 
     public function today() {
