@@ -1,17 +1,19 @@
-
 <?php
-
 //this statement includes an instance of the database connection file
 include_once("classes/Crud.php");
 //include an instance of the crud methods so they are available for use
 $crud = new Crud();
-//get the table that will be used to load the pages data.
-$table = $crud->escape_string($_GET['table']);
 
-//fetch the data from the database
-$query = "SELECT * FROM $table";
+//This info is HARD CODED. If you alter the table names or Columns, this all must be redone.
+$columns = array("TActionDate","FirstName","LastName","ItemName","Qty","TotalCharge");
+
+//echo print_r($cols);
+//This query will output the Transaction date, First Name, Last Name, Quantity, And Total Charge of the Order
+$query = "SELECT TA.TActionDate,TA.FirstName,
+          TA.LastName,I.ItemName,TAItem.Qty,TAItem.TotalCharge
+          FROM TActionItem TAItem JOIN Inventory I ON TAItem.ItemID = I.ItemID JOIN TAction TA ON TAItem.TActionID = TA.TActionID";
 //get all the data from the query above and store it into the $result variable
-$results = $crud->getData($query);
+$result = $crud->getData($query);
 
 //echo print_r($result);
 ?>
@@ -35,13 +37,13 @@ $results = $crud->getData($query);
             <table width="86%" class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Item ID</th>
-                        <th>Item Name</th>
-                        <th>Unit Price</th>
-                        <th>Unit Cost</th>
-                        <th>Packaging Cost </th>
-                        <th>Cost Modified Date </th>
-                        <th>Actions</th>
+                        <?php
+                            //create the table headings for each column of the table
+                            foreach($columns as $value)
+                            {
+                                echo "<th>".$value ."</th>";
+                            }
+                        ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,22 +51,16 @@ $results = $crud->getData($query);
                     <!------------------PHP FOREACH LOOP START------------------->
                     <?php
                         //For every item of result
-                        foreach ($results as $key => $result)
+                        foreach ($result as $key => $res)
                         {
                             echo "<tr>";   
                             //create a column for every column in the table and put the result inside of it
-                            echo "<td>".$result['ItemID']."</td>";
-                            echo "<td>".$result['ItemName']."</td>";
-                            echo "<td>".$result['UnitPrice']."</td>";
-                            echo "<td>".$result['UnitCost']."</td>";
-                            echo "<td>".$result['PackagingCost']."</td>";
-                            echo "<td>".$result['CostModDate']."</td>";
-                            //For Every Item in the results create and edit and delete button.
-                            echo "<td> <a href='edit.php?table=".$table."&id=".$result['ItemID']."'>Edit</a> |".
-                            " <a onclick='confirm('Are you sure that you want to delete?'); "." <a href='delete.php?table=".$table."&id=".$result['ItemID']."'>Delete</a>"."</td>";
+                            foreach($columns as $value)
+                            { 
+                                echo "<td>".$res[$value]."</td>";
+                            }
                         }
                     ?>
-                    <!----------------\"delete.php?id=$res[id]\"--LOOP ENDS-------------------->
                     </tr>
                 </tbody>
             </table>

@@ -1,6 +1,6 @@
 <?php
 
-    include_once("classes/Crud.php");
+    include_once("../classes/Crud.php");
 
     $crud = new Crud();
     
@@ -19,9 +19,12 @@
     
     foreach ($items as $key => $item)
     {
-        array_push($itemNames,$item['ItemName']);
-        array_push($itemIDs,$item['ItemID']);
-        array_push($unitPrices,$item['UnitPrice']);
+        if ($key > 0)
+        {
+            array_push($itemNames,$item['ItemName']);
+            array_push($itemIDs,$item['ItemID']);
+            array_push($unitPrices,$item['UnitPrice']);
+        }
     }
 
     //This query will get the transaction types from the db so we can choose from one.
@@ -29,28 +32,11 @@
     //get the transaction type information
     $parties = $crud->getData($query);
 
-    echo "<script>var partyTypes = [];</script>";
-
-    $partylist = "";
-    foreach($parties as $party)
-    {
-        $partylist .= "<option value='$party[PartyID]'> $party[PartyType] </option>";
-        echo "<script> partyTypes.push('".$party['PartyType'] ."'); </script>";
-
-    }
-
-    echo "<script>console.log(partyTypes);</script>";
-
-
-
-
-
-
     $date = getdate();
     $day = $date['mday'];
     $month = $date['mon'];
     $year = $date['year'];
-    $today = "$month-".($day-1)."-$year";
+    $today = "$year-$month-".($day-1);
     //echo print_r($itemNames);
 
     //write some javascript and create a variable to load the item names and prices into.
@@ -89,7 +75,7 @@
         <div id="demo" class="carousel slide col-sm-12" data-interval="false" data-ride="none">    
                 <!-- The slideshow -->
                 <div class="carousel-inner">
-                    <form  method="post" id="withdraw" action="processorder.php" style="height:400px; border:0px solid purple;">
+                    <form  method="post" id="withdraw" action="processorder.1.php" style="height:400px; border:0px solid purple;">
                         <!--  Hidden Fields -->
                         <input type="hidden" name="num_items" id="num_items" value="1" />
                         <input type="hidden" name="TActionDate" value="<?php echo $today; ?>" />
@@ -145,11 +131,11 @@
 
                         <!-- ################################ SLIDE 2 ######################################## -->
                         <!-- Select Who / Where the items are going -->
-                        <div class="carousel-item" style="border:0px solid red; height:100%;" >
+                        <!--<div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
                                 <h3>Who purchased these items?</h3>
                             </div>
-                            <!-- Company -->
+                        
                             <div class="form-group col-sm-8 ml-auto mr-auto border " id="details" style=" max-height:280px; height:280px; border:0px solid green;">
                                 <div class="row pt-2 pb-2">
                                     <div class="col-sm-12 " >
@@ -174,19 +160,19 @@
                                 </div>
                                 </div>
                             </div>
-                        </div>
+                        </div>-->
                         <!-- ################################ SLIDE 3 ######################################## -->
                         <!-- Select Who / Where the items are going -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3><span class="party"></span> Info</h3>
+                                <h3><span class="party"></span> Purchase Info</h3>
                             </div>
                             <!-- Company -->
                             <div class="form-group col-sm-8 ml-auto mr-auto border" style=" max-height:280px; height:280px; border:2px solid green;">
                                 <div class="row pt-2 pb-2">
                                     <div class="col-sm-12 " >
-                                        <label for="PartyName"><span class="party"> </span> name: </label>
-                                        <input type="text" class="form-control" id="goingTo" name='PartyName' onchange="to.value=this.value;" required>
+                                        <label for="PartyName">Who Purchased These Items? </label>
+                                        <input type="text" class="form-control" id="goingTo" name='PurchasedBy' placeholder="person, company, event, etc." onkeyup="purchased_by();to.value=this.value;"  onclick="purchased_by(); to.value=this.value;" required>
                                     </div>
                                 </div>
                             </div>
@@ -195,9 +181,9 @@
                                     <div class="col-sm-2" style="border:0px solid green;">
                                         <button type="button" class="btn btn-outline-info" href="#demo" data-slide="prev">Previous</button>
                                     </div>
-                                <div class="col-sm-8  " style="border:0px solid blue;"> </div>
-                                    <div class="col-sm-2"  style="border:0px solid red; text-align:right;">
-                                        <button type="button" class="btn btn-outline-info" href="#demo" data-slide="next" >Next</button>
+                                <div class="col-sm-8 " style="border:0px solid blue;"> </div>
+                                    <div class="col-sm-2" id="going2"  style="border:0px solid red; text-align:right;">
+
                                     </div>
                                 </div>
                             </div>
@@ -312,6 +298,26 @@
     
 
         <script>
+
+            function purchased_by()
+            {
+                var button_container = document.getElementById('going2');
+
+                console.log(button_container.innerHTML);
+                if (document.getElementById('goingTo').value != '')
+                {
+                    var enabled_button = "<button type='button' class='btn btn-outline-info' href='#demo' data-slide='next'  >Next</button>";
+                    if (button_container.innerHTML == '')
+                    {
+                      button_container.innerHTML += enabled_button;
+                    }                    
+                }
+                else
+                {
+                    button_container.innerHTML = "";
+                }
+            }
+
             var number_of_items = 1;
             
             function addNotes(addnote) {
@@ -535,6 +541,7 @@
             }
 
             updateValues();
+            purchased_by();
         </script>
     </body>
 </html>

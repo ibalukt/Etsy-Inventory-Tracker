@@ -156,7 +156,7 @@ $receipts = json_decode($receipts,true);
 $receipts = array_reverse($receipts);
 $receipts = json_encode($receipts);
 
-echo $receipts;
+//echo $receipts;
 
 $myfile = fopen("files/receipts.txt", "w") or die("Unable to open file!");
 $txt = $receipts;
@@ -315,9 +315,9 @@ for ($i=0;$i<$count;$i+=100)
 }
 
 
-
-
 $listings .= "]";
+
+echo $listings;
 
 //DEBUG listings = json_decode($listings,true);
 
@@ -327,6 +327,12 @@ $myfile = fopen("files/listings.txt", "w") or die("Unable to open file!");
 $txt = $listings;
 fwrite($myfile,$txt);
 fclose($myfile);
+
+
+if (isset($_GET['all']))
+{
+    echo "<script> window.location='http://localhost:8080/Integrated_Project/Automated/dump_api_data.php' </script>";
+}
 
 ?>
 <HTML>

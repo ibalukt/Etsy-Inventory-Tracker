@@ -74,6 +74,22 @@ class Crud extends DbConfig
     {
         $result = $this->connection->query($query);
         
+        
+        if ($result == false) {
+            echo 'Error: cannot execute the command <br/>';
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    public function param_execute($query, $values)
+    {
+        $result = $this->connection->prepare($query);
+        $result->bind_param($values);
+        
         if ($result == false) {
             echo 'Error: cannot execute the command <br/>';
             return false;
@@ -112,7 +128,8 @@ class Crud extends DbConfig
     //GETS THE COLUMN NAMES FOR THE TABLES
     public function getCols($table)
     {
-        $query ="SELECT COLUMN_NAME,DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table'";
+        $query ="SELECT COLUMN_NAME,DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = 'laurens_data' AND TABLE_NAME = '$table' ORDER BY ORDINAL_POSITION";
 
         $result = $this->connection->query($query);
 

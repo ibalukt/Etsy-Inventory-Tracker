@@ -91,7 +91,7 @@ foreach ($receipts AS $key => $receipt)
 
 }
 
-//echo "<script> window.location = 'http://localhost:8080/Integrated_Project/Automated/restore_from_backup.php'  </script>";
+echo "<script> window.location ='http://localhost:8080/Integrated_Project/set_up_db.php' </script>";
 ?>
 
 

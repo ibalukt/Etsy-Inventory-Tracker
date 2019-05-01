@@ -41,8 +41,8 @@ if (isset($_POST['submit']))
     ItemID BIGINT,
     Qty INT,
     UnitPrice DECIMAL(18,2) ,
-    LineTotal DECIMAL(18,2) AS ((UnitPrice*Qty)),
-    CONSTRAINT PK_TActionItem_TActionIDItemID PRIMARY KEY (TActionID,ItemID)
+    LineTotal DECIMAL(18,2) AS ((UnitPrice*Qty))
+    /*CONSTRAINT PK_TActionItem_TActionIDItemID PRIMARY KEY (TActionID,ItemID)*/
     );";
     $crud->execute($query);
 
@@ -64,8 +64,7 @@ if (isset($_POST['submit']))
     (
     TActionID INT AUTO_INCREMENT NOT NULL,
     TActionDate DATE,
-    PartyID int NOT NULL,
-    PartyName VARCHAR(120),
+    PurchasedBy VARCHAR(120),
     SalesTax DECIMAL(18,2) DEFAULT 0.00,
     ShippingCharge DECIMAL(18,2) DEFAULT 0.00,
     TotalCharge DECIMAL(18,2) DEFAULT 0.00,
@@ -84,11 +83,6 @@ if (isset($_POST['submit']))
     $query = "ALTER TABLE TActionItem 
     ADD CONSTRAINT FK_TActionItem_TActionID_TAction_TActionID
     FOREIGN KEY (TActionID) REFERENCES TAction(TActionID);";
-    $crud->execute($query);
-
-    $query = "ALTER TABLE TAction
-    ADD CONSTRAINT FK_TAction_PartyID_Party_PartyID
-    FOREIGN KEY (PartyID) REFERENCES Party(PartyID);";
     $crud->execute($query);
 
     $query = "INSERT INTO Inventory (ItemID,ItemName,UnitPrice,UnitCost,PackagingCost,QtyAvailable) VALUES('0','THIS WAS REMOVED FROM ETSY API AND COULD NOT BE RECOVERED','0.00','0.00','0.00','0');";
@@ -154,8 +148,7 @@ if (isset($_POST['submit']))
         $TActionDate = new DateTime("@$epoch");
         //Format the new date
         $TActionDate = $TActionDate->format('Y-m-d H:i:s');
-        $PartyId = 1;
-        $PartyName = $receipt[0]['n'];
+        $PurchasedBy = $receipt[0]['n'];
         $SalesTax = $receipt[0]['t'];
         $ShippingCharge = $receipt[0]['s'];
         $TotalCharge = $receipt[0]['gt'];
@@ -165,8 +158,8 @@ if (isset($_POST['submit']))
         $inserted = false;
         //while($inserted == false)
         //{
-        $query = "INSERT INTO TAction (TActionDate,PartyID,PartyName,SalesTax,ShippingCharge,TotalCharge)
-                VALUES('$TActionDate','$PartyId','$PartyName','$SalesTax','$ShippingCharge','$TotalCharge')";
+        $query = "INSERT INTO TAction (TActionDate,PurchasedBy,SalesTax,ShippingCharge,TotalCharge)
+                VALUES('$TActionDate','$PurchasedBy','$SalesTax','$ShippingCharge','$TotalCharge')";
 
         $inserted = $crud->execute($query);
         //}
@@ -175,6 +168,7 @@ if (isset($_POST['submit']))
         $query = "SELECT LAST_INSERT_ID() FROM TAction";
         $get_id = $crud->getData($query);
         $TActionID = $get_id[0]['LAST_INSERT_ID()'];
+
 
         //recreate the Json Objects for transaction
         $transactions ="[";
@@ -201,21 +195,20 @@ if (isset($_POST['submit']))
             {
                 //echo "TActionID= $key,  ItemID = $ItemID, Quantity = $Qty, UnitPrice = $UnitPrice  <br/><br/><br/>";
                 //insert the items into the db
-                $query = "INSERT INTO TActionItem (TActionID,ItemID,Qty,UnitPrice) VALUES ('$TActionID','$ItemID','$Qty','$UnitPrice')";
+                $query = "INSERT INTO TActionItem (TActionID,ItemID,Qty,UnitPrice) VALUES('$TActionID','$ItemID','$Qty','$UnitPrice')";
+                echo $query . "<br/><br/>";
                 $inserted = $crud->execute($query);
+                //$inserted = $crud->execute($query);
                 //if there is more than 2 tries 
                 if ($tries > 3)
                 {
-                    //move on
-                    $inserted = true;
-                    $ItemID = 1;
-                    
+                    $inserted = true;                   
                 }
                 elseif ($tries > 2)
                 {
                     //set the item ID to 1. For whatever reason certain listing id's come back as 0 and the listings cannot be pulled from
                     //the API because they are 'sold out', 'removed', or some other weird status that can't be retrieved. Sooooo, se this to 
-                    //one and move on.
+                    //one and move on. 
                     $ItemID = 1;
                 }
                 $tries ++;

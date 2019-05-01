@@ -35,10 +35,13 @@ $API_count = $jsonData['count'];
 
 
 //get the count of sales currently in the dump
-$query = "SELECT COUNT(*) FROM TAction";
-$TAction_count = $crud->getData($query);
-$TAction_count = $TAction_count[0]['COUNT(*)'];
-$TAction_count = 1233;
+$query = "SELECT COUNT(*) FROM SalesDump";
+$SalesDump_count = $crud->getData($query);
+$SalesDump_count = $SalesDump_count[0]['COUNT(*)'];
+
+$new_count = $API_count - $SalesDump_count;
+
+echo $new_count;
 
 
 
@@ -65,7 +68,7 @@ $transactions = json_decode($transactions,true);
 
 foreach ($receipts AS $key => $receipt)
 {
-    if ($key >= ($TAction_count))
+    if ($key >= (sizeof($receipts)-$new_count))
     {
         $epoch = $receipt['dt'];
         //create a new date time from the epoch seconds

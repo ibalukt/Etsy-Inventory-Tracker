@@ -1,6 +1,4 @@
-
 <?php
-
 //this statement includes an instance of the database connection file
 include_once("classes/Crud.php");
 //include an instance of the crud methods so they are available for use
@@ -8,10 +6,16 @@ $crud = new Crud();
 //get the table that will be used to load the pages data.
 $table = $crud->escape_string($_GET['table']);
 
+$cols = $crud->getCols($table);
+//DEBUG echo print_r($cols, true);
+
+print_r($cols);
+
+//echo print_r($cols);
 //fetch the data from the database
 $query = "SELECT * FROM $table";
 //get all the data from the query above and store it into the $result variable
-$results = $crud->getData($query);
+$result = $crud->getData($query);
 
 //echo print_r($result);
 ?>
@@ -35,12 +39,13 @@ $results = $crud->getData($query);
             <table width="86%" class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Item ID</th>
-                        <th>Item Name</th>
-                        <th>Unit Price</th>
-                        <th>Unit Cost</th>
-                        <th>Packaging Cost </th>
-                        <th>Cost Modified Date </th>
+                        <?php
+                            //create the table headings for each column of the table
+                            foreach($cols as $value)
+                            {
+                                echo "<th>".$value ."</th>";
+                            }
+                        ?>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -49,19 +54,17 @@ $results = $crud->getData($query);
                     <!------------------PHP FOREACH LOOP START------------------->
                     <?php
                         //For every item of result
-                        foreach ($results as $key => $result)
+                        foreach ($result as $key => $res)
                         {
                             echo "<tr>";   
                             //create a column for every column in the table and put the result inside of it
-                            echo "<td>".$result['ItemID']."</td>";
-                            echo "<td>".$result['ItemName']."</td>";
-                            echo "<td>".$result['UnitPrice']."</td>";
-                            echo "<td>".$result['UnitCost']."</td>";
-                            echo "<td>".$result['PackagingCost']."</td>";
-                            echo "<td>".$result['CostModDate']."</td>";
+                            foreach($cols as $value)
+                            { 
+                                echo "<td>".$res[$value]."</td>";
+                            }
                             //For Every Item in the results create and edit and delete button.
-                            echo "<td> <a href='edit.php?table=".$table."&id=".$result['ItemID']."'>Edit</a> |".
-                            " <a onclick='confirm('Are you sure that you want to delete?'); "." <a href='delete.php?table=".$table."&id=".$result['ItemID']."'>Delete</a>"."</td>";
+                            echo "<td> <a href='edit.php?table=".$table."&id=".$res[$cols[0]]."'>Edit</a> |".
+                            " <a onclick='confirm('Are you sure that you want to delete?'); "." <a href='delete.php?table=".$table."&id=".$res[$cols[0]]."'>Delete</a>"."</td>";
                         }
                     ?>
                     <!----------------\"delete.php?id=$res[id]\"--LOOP ENDS-------------------->
