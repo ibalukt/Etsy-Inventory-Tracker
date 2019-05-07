@@ -1,42 +1,36 @@
 <?php
     //start the session
     session_start();
-    include_once("classes/DbConfig.php");
+    include_once("classes/Crud.php");
+
 
     //create a connection variable specifically for this php
-    $db = new DbConfig();
-    $db = $db->__construct();
+    $crud = new crud();
 
     //If both the UserName and UserPass are created
     if ((isset($_POST['UserName'])) && (isset($_POST['UserPass'])))
     {        
         //prepare the statement
-        $stmt = $db->prepare("SELECT * FROM Users WHERE UserName= ? AND UserPass= ?");
-        //bind the parameters
-        $stmt->bind_param("ss",$UserName,$UserPass);
+        $query = "SELECT UserName,UserPass FROM Users WHERE UserId = 1";
+        $result = $crud->getData($query);
 
         //assign values to the parameters
-        $UserName = mysqli_escape_string($db,$_POST['UserName']);
-        $UserPass = mysqli_escape_string($db,$_POST['UserPass']);
+        $UserName = $_POST['UserName'];
+        $UserPass = $_POST['UserPass'];
 
         //execute the statement
-        $stmt->execute();
-        $result = $stmt->get_result();
 
-        //if the number of rows retuned is zero, that means that there was no results that matched user inputs
-        if ($result->num_rows == 1)
+        if ((password_verify($UserPass,$result[0]['UserPass'])&& ($UserName == $result[0]['UserName'])))
         {
-            //create a session variable for validation on other pages
-            $_SESSION['UserName'] = $UserName;
-            //send user to the new page
-            header('Location:index.php');
-        } 
+            echo "success!";
+            echo "<script> window.location ='inventory.php?'; </script>";
+        }
         else
         {
             //send user back to the login
             echo "<script> window.location ='login.php?error=1'; </script>";
         } 
-    } 
+    }
     else
     {
         //send user back to the login page.

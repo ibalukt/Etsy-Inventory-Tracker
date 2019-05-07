@@ -10,7 +10,7 @@ $signatures = array( 'consumer_key'     => $ini['API_KEY'],'shared_secret'    =>
 
 $signatures['oauth_token'] = $ini['OAUTH_TOKEN'];
 $signatures['oauth_secret'] = $ini['OAUTH_SECRET'];
-
+/*
 //--------------------------------------TRANSACTIONS
 //set the initial count 
 $count = 200;
@@ -259,9 +259,11 @@ for ($i=0;$i<$count;$i+=100)
         $listing = json_encode($myObj);
         $listings .= $listing . ",";
     }
-}
+}*/
 
 //INACTIVE
+
+$listings = "[";
 $count = 100;
 
 for ($i=0;$i<$count;$i+=100)
@@ -269,7 +271,7 @@ for ($i=0;$i<$count;$i+=100)
     $oauthObject->reset();
     $result = $oauthObject->sign(array(
         'action' => 'GET',
-        'path' => 'https://openapi.etsy.com/v2/shops/14069651/listings/inactive',
+        'path' => 'https://openapi.etsy.com/v2/shops/14069651/listings/active',
         'parameters' => array( 
                 'limit' => '100',
                 'offset' => $i

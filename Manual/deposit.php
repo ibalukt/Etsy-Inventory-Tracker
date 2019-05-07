@@ -6,13 +6,22 @@
     
     //$table = $crud->escape_string($_GET['table']);
 
+    if (isset($_GET['GroupID']))
+    {
+        $GroupID = $crud->escape_string($_GET['GroupID']);
+        $HiddenGroup = "<input type='hidden' name='GroupID'  value='$GroupID' />";
+
+    }
+    else
+    {
+        $HiddenGroup = "";
+    }
 
     //query to get the ItemIDs, ItemNames, Prices, and Quantities for the items. This will be so we can put the items into 
     //a dropdown for the user to pick from
 
-    $query = "SELECT * FROM Inventory WHERE State = 'active' ORDER BY ItemName ASC";
+    $query = "SELECT * FROM Inventory ORDER BY ItemName ASC";
     //get all the data from the query above and store it into the $result variable
-    
     $items = $crud->getData($query);
     ///print_r($items);
     //Add the itemNames and IDS to an empty array
@@ -22,12 +31,21 @@
     
     foreach ($items as $key => $item)
     {
+        if ($key > 0)
+        {
             array_push($itemNames,$item['ItemName']);
-            array_push($itemIDs,$item['ItemID']);      
+            array_push($itemIDs,$item['ItemID']);
+            array_push($unitPrices,$item['UnitPrice']);
+        }
+    }
+
+    if (isset($_GET['action']))
+    {
+        $action = $crud->escape_string($_GET['action']);
     }
 
     //This query will get the transaction types from the db so we can choose from one.
-    $query = "SELECT * FROM Reason";
+    $query = "SELECT * FROM Reasons WHERE In_Out = $action";
     //get the transaction type information
     $reasons = $crud->getData($query);
 
@@ -37,9 +55,9 @@
     $reason_list = "";
     foreach($reasons as $key => $reason)
     {
-        $reason_list .= "<option value='$reason[ReasonID]'> $reason[Explanation] </option>";
+        $reason_list .= "<option value='$reason[ReasonID]'> $reason[Reason] </option>";
         echo "<script> reasonIDs.push('".$reason['ReasonID']. "'); 
-        reasons.push('".$reason['Explanation']."'); </script>";
+        reasons.push('".$reason['Reason']."'); </script>";
     }
 
 
@@ -61,7 +79,8 @@
         //add one of the options for each iteration through the loop
         $itemlist .= "<option value='$itemIDs[$key]'>$itemName</option>";
         //Add one of the item names to the array.
-        echo "<script> itemNames.push('".$itemName."'); </script>";
+        echo "<script> itemNames.push('".$itemName."'); 
+                       unitPrices.push('".$unitPrices[$key]."'); </script>";
         
     }
 
@@ -70,7 +89,7 @@
 ?>
 <html>
     <head>
-        <title>Start OffSite Inventory</title>
+        <title>Bootstrap Example</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -80,20 +99,31 @@
         <script> var r = 0; </script>
         </head>
     <body>
-    <?php include_once('nav.php'); ?>
+        <a href="details.php?table=<?php echo $table;?>"> Home </a>
+
 
 <div class="container-fluid">
     <div class="row">
         <div id="demo" class="carousel slide col-sm-12" data-interval="false" data-ride="none">    
                 <!-- The slideshow -->
                 <div class="carousel-inner">
-                    <form  method="post" id="withdraw" action="remove_from_inventory.php" style="height:500px; border:0px solid purple;">
+                    <form  method="post" id="withdraw" action="remove_from_inventory.php" style="height:400px; border:0px solid purple;">
                         <!--  Hidden Fields -->
                         <input type="hidden" name="num_items" id="num_items" value="1" />
                         <!-- ################################ SLIDE 1 ######################################## -->
                         <div class="carousel-item  active" style="border:0px solid red;height:100%;" >
                             <div class="col-sm-7 ml-auto mr-auto text-center">
-                                <h3 class='p-4 text-secondary'>Which Items You Removing From Inventory?</h3>
+                                <?php 
+                                    if ($action == 0)
+                                    {
+                                        echo "<h3>Which Items You Removing From Inventory?<h3>";
+                                    }
+                                    else
+                                    {
+                                        echo $HiddenGroup;
+                                        echo "<h3>Which Items Are You Depositing In Inventory?</h3>";
+                                    }
+                                ?>
                             </div>
                             <!-- Select Items that are being removed from inventory -->
                             <div class="form-group col-sm-8 pt-2 ml-auto mr-auto border" id='itemSelect' style=" max-height:280px; height:280px; overflow-y:scroll; border:2px solid green;">
@@ -136,7 +166,16 @@
                         <!-- Select Who / Where the items are going -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3 class='p-4 text-secondary'>Why are you removing these items?</h3>
+                                <?php
+                                    if ($action == 0)
+                                    {
+                                        echo "<h3>Why are you removing these items?</h3>";
+                                    }
+                                    else
+                                    {
+                                        echo "<h3>Why are you putting these items into inventory?</h3>";
+                                    }
+                                ?>
                             </div>
                             <div class="form-group col-sm-8 ml-auto mr-auto border " id="details" style=" max-height:280px; height:280px; border:0px solid green;">
                                 <div class="row pt-2 pb-2">
@@ -164,15 +203,26 @@
                         <!-- Select Who / Where the items are going -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3 class='p-4 text-secondary'><span class="party"></span>Where are these items Going?</h3>
+                                <h3><span class="party"></span>Where Are These Items Going?</h3>
                             </div>
                             <!-- Company -->
                             <div class="form-group col-sm-8 ml-auto mr-auto border" style=" max-height:280px; height:280px; border:2px solid green;">
                                 <div class="row pt-2 pb-2">
                                     <div class="col-sm-12 " >
                                         <label for="PartyName">Destination? </label>
-                                        <input type="text" class="form-control" id="goingTo" name='GoingWhere' placeholder="location" onkeyup="purchased_by();updateValues(); "  
-                                                                                                onclick="purchased_by();updateValues()" required>
+                                        <?php 
+                                            if ($action == 0)
+                                            {
+                                                echo "<input type='text' class='form-control' id='goingTo' name='GoingWhere' placeholder='person, company, event, etc.' onkeyup='purchased_by();updateValues(); '  
+                                                onclick='purchased_by();updateValues()' required>"; 
+                                            }
+                                            else
+                                            {
+                                                echo "<input type='text' class='form-control' id='goingTo' name='GoingWhere' value='Inventory' readonly>"; 
+                                            }
+                                        ?>
+                                        <!--<input type="text" class="form-control" id="goingTo" name='GoingWhere' placeholder="person, company, event, etc." onkeyup="purchased_by();updateValues(); "  
+                                                                                                onclick="purchased_by();updateValues()" required>-->
                                     </div>
                                 </div>
                             </div>
@@ -183,7 +233,12 @@
                                     </div>
                                 <div class="col-sm-8 " style="border:0px solid blue;"> </div>
                                     <div class="col-sm-2" id="going2"  style="border:0px solid red; text-align:right;">
-
+                                        <?php
+                                            if ($action == 1)
+                                            { 
+                                                echo "<button type='button' class='btn btn-outline-info' href='#demo' data-slide='next'>Next</button>"; 
+                                            }
+                                        ?>
                                     </div>
                                 </div>
                             </div>
@@ -191,7 +246,16 @@
                         <!-- ################################ SLIDE 5 ######################################## -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3 class='p-4 text-secondary'>Withdrawl Summary</h3>
+                                <?php 
+                                    if ($action ==0)
+                                    {
+                                        echo "<h3>Withdrawl Summary</h3>";
+                                    }
+                                    else
+                                    {
+                                        echo "<h3>Deposit Summary </h3>";
+                                    }
+                                ?>
                             </div>
                             <!-- Explanation -->
                             <div class="form-group col-sm-8 ml-auto mr-auto border" style=" max-height:280px; height:280px; overflow-x:none; overflow-y:scroll; border:2px solid green;">
@@ -231,7 +295,7 @@
                                     </div>
                                     <div class="col-sm-8"> </div>
                                     <div class="col-sm-2" style="text-align:center;">
-                                        <input onclick="flipQtys();" type="submit" class="btn btn-outline-success" name="submit" value="submit">
+                                        <input onclick="<?php if($action==0){echo "flipQtys()";}?>" type="submit" class="btn btn-outline-success" name="submit" value="submit">
                                     </div>
                                 </div>
                             </div>

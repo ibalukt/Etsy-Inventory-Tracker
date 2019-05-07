@@ -85,19 +85,28 @@ class Crud extends DbConfig
         }
     }
 
-    public function param_execute($query, $values)
+    public function prep_execute($query,$types,$params)
     {
-        $result = $this->connection->prepare($query);
-        $result->bind_param($values);
-        
-        if ($result == false) {
+        $stmt = $this->connection->prepare($query);
+
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        echo mysqli_stmt_affected_rows($stmt);
+        if (mysqli_stmt_affected_rows($stmt)==0) {
             echo 'Error: cannot execute the command <br/>';
             return false;
         }
         else
         {
-            return true;
+            echo 'Success! <br/>';
+            return ;
         }
+    }
+
+    public function last_insert_id()
+    {
+        return mysqli_insert_id($this->connection);
     }
 
     public function escape_string($value)

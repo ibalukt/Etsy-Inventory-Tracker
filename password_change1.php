@@ -1,4 +1,3 @@
-<?php session_start(); ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,20 +25,20 @@
             </div>
             <div class="row">
                 <div class="col-sm-12 ml-auto mr-auto text-center">
-                    <h2> Login </h2>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12 form-group ml-auto mr-auto mt-2">
-                    <!--    UserName    -->
-                    <label for="UserName">User Name </label>
-                    <input class="form-control" type="text" name="UserName" required/>
+                    <h2> Change Password</h2>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-12 form-group ml-auto mr-auto">
                     <!--    Password  -->
-                    <label for="UserPass">Password</label>
+                    <label for="UserPass">Type a new password</label>
+                    <input class="form-control" type="text" name="UserPass" required/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 form-group ml-auto mr-auto">
+                    <!--    Password  -->
+                    <label for="UserPass">Confirm new password</label>
                     <input class="form-control" type="text" name="UserPass" required/>
                 </div>
             </div>
@@ -48,14 +47,7 @@
                     <input type="submit" class="btn btn-primary" style="width:100%;" value="Login"  />
                 </div>
             </div>
-            <div class="row">
-                <div class='col-sm-12 ml-auto mr-auto text-center'>
-                    <a  href="create_user.php">Create Account</a><br/>
-                    <a  href="forgot_password.php">I Forgot Password? </a>               
-                </div>
-            </div>
         </form>
     </div>
 </body>
 </html>
-
