@@ -1,5 +1,5 @@
 <?php
-
+    include_once('session_check.php');
     include_once("classes/Crud.php");
 
     $crud = new Crud();
@@ -18,12 +18,13 @@
     //Add the itemNames and IDS to an empty array
     $itemNames = array();
     $itemIDs = array();
-    $unitPrices = array();
+    $OnHandQtys = array();
     
     foreach ($items as $key => $item)
     {
             array_push($itemNames,$item['ItemName']);
-            array_push($itemIDs,$item['ItemID']);      
+            array_push($itemIDs,$item['ItemID']);   
+            array_push($OnHandQtys,$item['OnHandQty']); 
     }
 
     //This query will get the transaction types from the db so we can choose from one.
@@ -53,7 +54,7 @@
 
     //write some javascript and create a variable to load the item names and prices into.
     echo "<script> var itemNames = []; 
-                   var unitPrices =[];  </script>";
+                   var onHandQtys =[];  </script>";
     //create a string variable to load the options for the select input into
     $itemlist = "";
     foreach($itemNames as $key=>$itemName)
@@ -61,7 +62,8 @@
         //add one of the options for each iteration through the loop
         $itemlist .= "<option value='$itemIDs[$key]'>$itemName</option>";
         //Add one of the item names to the array.
-        echo "<script> itemNames.push('".$itemName."'); </script>";
+        echo "<script> itemNames.push('".$itemName."'); 
+                       onHandQtys.push('".$OnHandQtys[$key]."');</script>";
         
     }
 
@@ -73,10 +75,16 @@
         <title>Start OffSite Inventory</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <title>PHP & MYSQL OOP CRUD SYSTEM </title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
         <script> var r = 0; </script>
         </head>
     <body>
@@ -93,7 +101,7 @@
                         <!-- ################################ SLIDE 1 ######################################## -->
                         <div class="carousel-item  active" style="border:0px solid red;height:100%;" >
                             <div class="col-sm-7 ml-auto mr-auto text-center">
-                                <h3 class='p-4 text-secondary'>Which Items You Removing From Inventory?</h3>
+                                <h3 class='p-5 text-secondary'>Which Items You Removing From Inventory?</h3>
                             </div>
                             <!-- Select Items that are being removed from inventory -->
                             <div class="form-group col-sm-8 pt-2 ml-auto mr-auto border" id='itemSelect' style=" max-height:280px; height:280px; overflow-y:scroll; border:2px solid green;">
@@ -136,7 +144,7 @@
                         <!-- Select Who / Where the items are going -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3 class='p-4 text-secondary'>Why are you removing these items?</h3>
+                                <h3 class='p-5 text-secondary'>Why are you removing these items?</h3>
                             </div>
                             <div class="form-group col-sm-8 ml-auto mr-auto border " id="details" style=" max-height:280px; height:280px; border:0px solid green;">
                                 <div class="row pt-2 pb-2">
@@ -164,7 +172,7 @@
                         <!-- Select Who / Where the items are going -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3 class='p-4 text-secondary'><span class="party"></span>Where are these items Going?</h3>
+                                <h3 class='p-5 text-secondary'><span class="party"></span>Where are these items Going?</h3>
                             </div>
                             <!-- Company -->
                             <div class="form-group col-sm-8 ml-auto mr-auto border" style=" max-height:280px; height:280px; border:2px solid green;">
@@ -191,7 +199,7 @@
                         <!-- ################################ SLIDE 5 ######################################## -->
                         <div class="carousel-item" style="border:0px solid red; height:100%;" >
                             <div class='col-sm-8 ml-auto mr-auto text-center'>
-                                <h3 class='p-4 text-secondary'>Withdrawl Summary</h3>
+                                <h3 class='p-5 text-secondary'>Withdrawl Summary</h3>
                             </div>
                             <!-- Explanation -->
                             <div class="form-group col-sm-8 ml-auto mr-auto border" style=" max-height:280px; height:280px; overflow-x:none; overflow-y:scroll; border:2px solid green;">
@@ -231,7 +239,8 @@
                                     </div>
                                     <div class="col-sm-8"> </div>
                                     <div class="col-sm-2" style="text-align:center;">
-                                        <input onclick="flipQtys();" type="submit" class="btn btn-outline-success" name="submit" value="submit">
+                                        <input type='hidden' name='is_submitted' value='1' />
+                                        <input type="submit" class="btn btn-outline-success btn_submit" name="btnsubmit" value="Create">
                                     </div>
                                 </div>
                             </div>
@@ -256,6 +265,12 @@
             </a>
         </div>
     </div>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    
+    <!-- bootbox code -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
     
 
@@ -370,6 +385,28 @@
                     //get the quantity that was selected
                     var quantity = document.getElementById('Qty'+i).value;
                     //get the price of the item
+                    //this block of code is for validation
+                    if (i > 1)
+                    {
+                        //Check all of the previously selected items to make sure that there is not a duplicate item
+                        for (j=1;j<i;j++)
+                        {
+                            //iff there is a duplicate item then just increment the new selected index until it doesn't match any previous
+                            if (document.getElementById('ItemID'+(i)).options.selectedIndex == document.getElementById('ItemID'+(j)).options.selectedIndex)
+                            {
+                                //console.log('There is a duplicate item');
+                                document.getElementById('ItemID'+i).options.selectedIndex++;
+                            }
+                        }
+                    }
+                    //check if the current quantity is greater than what is available in inventory
+                    if (parseInt(quantity) > onHandQtys[selected])
+                    {
+                        
+                        bootbox.alert(itemNames[selected] + "has " + quantity + " selected, but  there is only " + onHandQtys[selected] + " available");
+                        //console.log(itemNames[selected] + "has " + quantity + " selected, but  there is only " + onHandQtys[selected] + " available");
+                        document.getElementById('Qty'+i).value = onHandQtys[selected];
+                    }
 
                     //###################### SUMMARY SLIDE ###################################
                     //set the item Name for the summary item field
@@ -385,6 +422,7 @@
 
                 
             }
+
 
             function preserveItems() 
             {
@@ -447,6 +485,37 @@
 
             updateValues();
             purchased_by();
+
+
+           $('.btn_submit').click(function(event){
+            event.preventDefault();
+            var destination = ($(this).attr("href"));
+            //alert(destination);
+            bootbox.confirm({
+                message: "Are you sure you want to start this off-site inventory?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                    
+                },
+                callback: function (result) {
+                    if (result==true)
+                    {
+                        var form = document.getElementById('');
+                        console.log(document.getElementById('withdraw'));
+                        flipQtys();
+                        withdraw.submit();
+                        //document.getElementById('withdraw').submit();
+                    }
+                }
+            });
+        });
         </script>
     </body>
 </html>

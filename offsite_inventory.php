@@ -1,4 +1,5 @@
 <?php
+include_once('session_check.php');
 include_once('classes/Crud.php');
 $crud = new crud();
 
@@ -17,12 +18,12 @@ $OffSites = $crud->getData($query);
     </head>
     <body>
     <?php include_once('nav.php'); ?>
-    <header class='p-4'> 
+    <div class='container'>
+    <header class='pt-5 pb-5'> 
         <h3 class='text-secondary text-center'> Off-Site Inventories</h3>
     </header>
-    <div class='container'>
     <body>
-        <table class='table table-sm'>
+        <table class='table '>
             <thead>
                 <tr>
                     <th>OffSite ID</th>
@@ -40,7 +41,7 @@ $OffSites = $crud->getData($query);
                         echo "
                                     <tr>
                                         <td>$OffSite[OffSiteID]</td>
-                                        <td><a style='text-decoration:none;' href='offsite_items.php?OffSiteID=$OffSite[OffSiteID]'>$OffSite[Explanation]</a></td>
+                                        <td>$OffSite[Explanation]</td>
                                         <td><a style='text-decoration:none;' href='offsite_items.php?OffSiteID=$OffSite[OffSiteID]'>$OffSite[GoingWhere]</a></td>
                                         <td>$OffSite[StartDate]</td>";
                                 if ($OffSite['EndDate'] != null)

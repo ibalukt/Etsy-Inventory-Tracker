@@ -1,4 +1,5 @@
 <?php 
+include_once('session_check.php');
 include_once('classes/DbConfig.php');
 include_once('classes/Crud.php');
 $crud = new crud();
@@ -30,7 +31,7 @@ $crud = new crud();
             $crud->prep_execute($query,"iii",$params);
             echo "4";
 
-            $query = "UPDATE OffSite SET EndDate = CURRENT_TIMESTAMP";
+            $query = "UPDATE OffSite SET EndDate = CURRENT_TIMESTAMP WHERE OffSiteID = $OffSiteID";
             $query = $crud->execute($query);
 
         }
@@ -43,13 +44,14 @@ $crud = new crud();
             echo "2";
             $RestockQty = $crud->escape_string($_POST['RestockQty'.($i)]);
             
-            $OnHandQty = $item[0]['OnHandQty'] - $RestockQty;
-            $OffSiteQty = $item[0]['OffSiteQty'] + $RestockQty;
             echo "3";
 
             $query = "UPDATE OffSiteItem SET RestockQty = ? WHERE OffSiteID =? AND ItemID = ?";
             $params = array($RestockQty,$OffSiteID,$ItemID);
             $crud->prep_execute($query,"iii",$params);
+
+            $OnHandQty = $item[0]['OnHandQty'] - $RestockQty;
+            $OffSiteQty = $item[0]['OffSiteQty'] + $RestockQty;
 
             $query = "UPDATE Inventory SET OnHandQty = ?, OffSiteQty = ? WHERE ItemID = ?";
             $params = array($OnHandQty,$OffSiteQty,$ItemID);
@@ -61,19 +63,30 @@ $crud = new crud();
 
             //Qty of the items being changed
             $Qty = $crud->escape_string($_POST['SoldQty'.($i)]);
+            $InitialQty = $crud->escape_string($_POST['InitialQty'.($i)]);
 
             //INSERT THE IACTION INTO THE DB
             $query = "UPDATE OffSiteItem SET SoldQty = ? WHERE OffSiteID = ? AND ItemID = ?";
             $params = array($Qty,$OffSiteID,$ItemID);
             $crud->prep_execute($query,"iii",$params);
 
-            $query = "SELECT * FROM Inventory WHERE ItemID = $ItemID";
-            $item = $crud->getData($query);
+            //$query = "SELECT * FROM Inventory WHERE ItemID = $ItemID";
+            //$item = $crud->getData($query);
+            $query = "SELECT * FROM OffSiteItem WHERE ItemID = $ItemID";
+            $items = $crud->getData($query);
 
-            $new_OffSite = $item[0]['OffSiteQty']-$Qty;
+            $OffSiteQty= 0;
+            foreach($items as $item)
+            {
+                $OffSiteQty = $OffSiteQty + $item['RemainingQty'];
+            }
+
+            //$offset = ($item[0]['OffSiteQty'] + $InitialQty) - $Qty)
+
+            //$new_OffSite = ((($item[0]['OffSiteQty'] + $item[0]['OnHandQty']) - $Qty)-$item[0]['OnHandQty']);
 
             $query = "UPDATE Inventory SET OffSiteQty = ? WHERE ItemID = ?";
-            $params = array($new_OffSite,$ItemID);
+            $params = array($OffSiteQty,$ItemID);
             $crud->prep_execute($query,"ii",$params);
         }
     }

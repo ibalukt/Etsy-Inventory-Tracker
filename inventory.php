@@ -1,15 +1,46 @@
 
 <?php
-
+include_once("session_check.php");
 //this statement includes an instance of the database connection file
 include_once("classes/Crud.php");
 //include an instance of the crud methods so they are available for use
 $crud = new Crud();
 //fetch the data from the database
-$query = "SELECT * FROM Inventory WHERE State = 'active' ORDER BY ItemName ASC";
-//get all the data from the query above and store it into the $result variable
+if (isset($_POST['search']))
+{
+    //This is for the search function
+    $ItemName = $crud->escape_string($_POST['search']);
+
+    $where = " AND ItemName LIKE '%$ItemName%'";
+}
+else 
+{
+    $where="";
+}
+
+echo "<script> var message = ''; </script>";
+if (isset($_POST['new_exists']))
+{
+    if ($_POST['num_new'] > 0)
+    {
+        echo "<script> message = '$_POST[num_new] new items were inserted into the database'; </script>";
+    } 
+    else
+    {
+        echo "<script> message = ''; </script>";
+    }  
+    //echo var_dump($_POST);
+    //echo "<script> approve_new_items(); </script>";
+}
+
+$query = "SELECT * FROM Inventory WHERE State = 'active'";
+$query .= $where;
+$orderby = "ORDER BY ItemName ASC";
+$query .= $orderby;
+
 $results = $crud->getData($query);
 
+//This gets all the active offsite inventories
 $query = "SELECT * FROM OffSite WHERE EndDate IS NULL";
 $OffSites = $crud->getData($query);
 
@@ -72,17 +103,14 @@ foreach($OffSites as $key => $OffSite)
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
     <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">-->
-    <style>
-        
-    </style>
 
 
 </head>
     <body>
         <?php include_once('nav.php'); ?>
         <div class="container">
-        <header class='p-4 text-center'>
-            <h3 class='text-secondary'>  My Inventory </h2>
+        <header class='pb-4 pt-5 text-center'>
+            <h3 class='text-secondary'>  My Inventory </h3>
         </header>
             <?php
                 if ($results == false)
@@ -92,9 +120,16 @@ foreach($OffSites as $key => $OffSite)
             ?>
             <!--<div><a href="add.php?table=<?php echo $table; ?>"> Add New Data </a><br/></br></div>-->
             <!---------------------TABLE START---------------------->
-            <div class='col-sm-12' >  </div>
-            <div class='col-sm-12 border' style="overflow-y:scroll; max-height:280px; " >
-                <table width="86%" class="table table-sm" style=" position:relative; ">
+            <form method='post' action='inventory.php'>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name='search' placeholder="search items" aria-describedby="basic-addon2" required>
+                <div class="input-group-append">
+                    <button type='submit' class="input-group-text" id="basic-addon2"> Search Items</button>
+                </div>
+            </div>
+            </form>
+            <div class='col-sm-12 border' style="overflow-y:scroll; min-height:260px; max-height:260px; " >
+                <table  class="table table-sm" style=" position:relative; ">
                         <?php if ($results != false)
                             {
                                 echo "<thead >
@@ -143,10 +178,13 @@ foreach($OffSites as $key => $OffSite)
                             }
                             else
                             {
-                                echo "<div class='col-sm-12 text-center mt-3'>
-                                        <p class='ml-auto mr-auto'>It looks like you don't have any records in your inventory. </p>
-                                        <a class='btn btn-primary ml-auto mr-auto;' href='pull_active_listings.php'> Pull Etsy Listings</a>
-                                    </div>";
+                                if (!isset($_POST['search']))
+                                {
+                                    echo "<div class='col-sm-12 text-center mt-3'>
+                                            <p class='ml-auto mr-auto'>It looks like you don't have any records in your inventory. </p>
+                                            <a class='btn btn-primary ml-auto mr-auto;' href='pull_active_listings.php'> Pull Etsy Listings</a>
+                                        </div>";
+                                }
                             }
                         ?>
                         <!----------------\"delete.php?id=$res[id]\"--LOOP ENDS-------------------->
@@ -228,6 +266,11 @@ foreach($OffSites as $key => $OffSite)
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
         <script> 
+            if (message != "")
+            {
+                bootbox.alert(message);
+            }
+
             $('.btn_delete').click(function(event){
                 event.preventDefault();
                  var destination = ($(this).attr("href"));
@@ -253,6 +296,7 @@ foreach($OffSites as $key => $OffSite)
                     }
                 });
             });
+
         </script>
     </body>
 </html>

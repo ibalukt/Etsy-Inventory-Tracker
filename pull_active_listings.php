@@ -1,6 +1,11 @@
 <?php 
+include_once('session_check.php');
+include_once('classes/Crud.php');
+$crud = new crud();
+
 require "classes/Oauth.php";
 $ini = parse_ini_file("etsytracker.ini");
+
 
 $oauthObject = new OAuthSimple();
 
@@ -42,7 +47,17 @@ for ($i=0;$i<$count;$i+=100)
 
     $l = $jsonData['results'];
 
-    for ($j=0;$j<sizeof($l);$j++)
+
+    if (isset($_GET['num']))
+    {
+        $num = $crud->escape_string($_GET['num']);
+    }
+    else
+    {
+        $num = sizeof($l);
+    }
+
+    for ($j=0;$j<$num;$j++)
     {
         $myObj = (object)[];
         $myObj->l = $l[$j]['listing_id'];
@@ -53,7 +68,7 @@ for ($i=0;$i<$count;$i+=100)
 
         $listing = json_encode($myObj);
 
-        if ((($count-$i) < 101) && ($j==(sizeof($l)-1)))
+        if ((($count-$i) < 101) && ($j==$num-1))
         {
             $listings .= $listing;
         }

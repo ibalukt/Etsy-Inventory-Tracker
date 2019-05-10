@@ -1,4 +1,5 @@
 <?php
+include_once('session_check.php');
 include_once('classes/DbConfig.php');
 include_once('classes/Crud.php');
 $crud = new crud();
@@ -40,7 +41,7 @@ $OffSiteItems = $crud->getData($query);
     </head>
     <body>
     <?php include_once('nav.php'); ?>
-    <header class='p-4'> 
+    <header class='p-5'> 
         <h3 class='text-secondary text-center'> <?php echo $OffSites[0]['GoingWhere']; ?></h3>
     </header>
         <div class='container'>
@@ -68,17 +69,17 @@ $OffSiteItems = $crud->getData($query);
                                     <td class='text-center'>$OffSiteItem[SoldQty] </td>
                                     <td class='text-center'>$OffSiteItem[RemainingQty]</td>";
                             echo "</tr>";
+                            if ($OffSites[0]['EndDate'] == null)
+                            {
+                                echo "<tr class='text-center'> 
+                                        <td></td>
+                                        <td></td>
+                                        <td><a class='btn btn-outline-primary' href='edit_offsite_items.php?Restock&OffSiteID=$OffSiteItem[OffSiteID]'>Adjust Restock Qty</a></td>
+                                        <td><a class='btn btn-outline-primary'  href='edit_offsite_items.php?OffSiteID=$OffSiteItem[OffSiteID]'>Adjust Sold Qty</a></td>
+                                        <td><a class='btn btn-outline-primary btn_return'  href='edit_offsite_items.php?Return_Items&OffSiteID=$OffSiteItem[OffSiteID]'>Return Remaining</a></td>
+                                    </tr>";
                             }
-                        }
-                        if ($OffSites[0]['EndDate'] == null)
-                        {
-                            echo "<tr class='text-center'> 
-                                    <td></td>
-                                    <td></td>
-                                    <td><a class='btn btn-outline-primary' href='edit_offsite_items.php?Restock&OffSiteID=$OffSiteItem[OffSiteID]'>Adjust Restock Qty</a></td>
-                                    <td><a class='btn btn-outline-primary'  href='edit_offsite_items.php?OffSiteID=$OffSiteItem[OffSiteID]'>Adjust Sold Qty</a></td>
-                                    <td><a class='btn btn-outline-primary btn_return'  href='edit_offsite_items.php?Return_Items&OffSiteID=$OffSiteItem[OffSiteID]'>Return Remaining</a></td>
-                                </tr>";
+                            }
                         }
                     ?>
                     </tbody>

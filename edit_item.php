@@ -1,4 +1,5 @@
 <?php 
+include_once('session_check.php');
 include_once('classes/Crud.php');
 $crud = new crud();
 
@@ -22,7 +23,7 @@ if (isset($_GET['ItemID']))
     </head>
     <body>
         <?php include_once('nav.php'); ?>
-        <h3 class='text-center text-secondary p-4'> Edit this item </h3>
+        <h3 class='text-center text-secondary pt-5 pb-4'> Edit this item </h3>
         <form  method="post" id="edit_subinventory" action="editaction.php">
             <div class="form-group col-sm-8 pt-2 ml-auto mr-auto border" id='itemSelect' style="">
                 <input type='hidden' name='ItemID' id='ItemID' value="<?php echo $ItemID;?>" />

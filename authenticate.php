@@ -23,17 +23,18 @@
         if ((password_verify($UserPass,$result[0]['UserPass'])&& ($UserName == $result[0]['UserName'])))
         {
             echo "success!";
+            $_SESSION['UserName'] = $UserName;
             echo "<script> window.location ='inventory.php?'; </script>";
         }
         else
         {
             //send user back to the login
-            echo "<script> window.location ='login.php?error=1'; </script>";
+            //echo "<script> window.location ='login.php?error=1'; </script>";
         } 
     }
     else
     {
         //send user back to the login page.
-        echo "<script> window.location ='login.php?error=0'; </script>";
+        //echo "<script> window.location ='login.php?error=0'; </script>";
     }
 ?>

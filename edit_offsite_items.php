@@ -1,4 +1,5 @@
-<?php 
+<?php
+include_once('session_check.php'); 
 include_once('classes/Crud.php');
 $crud = new crud();
 
@@ -13,6 +14,14 @@ $OffSites = $crud->getData($query);
 
 $query = "SELECT * FROM OffSiteItem OSI JOIN Inventory I ON OSI.ItemID = I.ItemID WHERE OffSiteID = $OffSiteID";
 $OffSiteItems = $crud->getData($query);
+
+echo "<script> var onHandQtys = [];
+                var number_of_items = ".sizeof($OffSiteItems)."; </script>";
+
+foreach($OffSiteItems as $OffSiteItem)
+{
+    echo "<script> onHandQtys.push('".$OffSiteItem['OnHandQty']."'); </script>";
+}
 
 
 ?>
@@ -29,11 +38,11 @@ $OffSiteItems = $crud->getData($query);
         include_once('nav.php'); 
         if (isset($_GET['Restock']))
         {
-            echo "<h3 class='p-4 text-center text-secondary'>Log items that were restocked </h3>"; 
+            echo "<h3 class='p-5 text-center text-secondary'>Log items that were restocked </h3>"; 
         }
         else
         {
-            echo "<h3 class='p-4 text-center text-secondary'>Log iems that were sold</h3>"; 
+            echo "<h3 class='p-5 text-center text-secondary'>Log iems that were sold</h3>"; 
         } 
     ?>
     <form  method="post" id="edit_offsite_items" action="offsite_editaction.php">
@@ -65,19 +74,19 @@ $OffSiteItems = $crud->getData($query);
                             <div class='col-sm-4 mt-auto' >
                                 <label for='ItemName$key'>Item Name: </label>
                                 <input type='hidden' name='ItemID$key' value='$ItemID' />
-                                <input type='text' class='form-control name='ItemName$key' value='$ItemName' readonly/>
+                                <input type='text' class='form-control' id='ItemName$key' name='ItemName$key' value='$ItemName' readonly/>
                              </div>
                             <div class='col-sm-2 mt-auto '>
-                                <label for='StartQty$key'> Initial Qty: </label> 
-                                <input type='number'class='form-control' id='InitialQty$key' name='InitialQty$key' value='$InitialQty' min='1'readonly/>
+                                <label for='InitialQty$key'> Initial Qty: </label> 
+                                <input type='number' class='form-control' id='InitialQty$key' name='InitialQty$key' value='$InitialQty' min='1'readonly/>
                             </div>
                             <div class='col-sm-2 mt-auto '>
                                 <label for='RestockQty$key'> Restock Qty: </label> 
-                                <input type='number'class='form-control' id='RestockQty$key' name='RestockQty$key' value='$RestockQty' min='1' onchange='updateValues(InitialQty$key,RestockQty$key,SoldQty$key,RemainingQty$key);'/>
+                                <input type='number'class='form-control' id='RestockQty$key' name='RestockQty$key' value='$RestockQty' min='0' onchange='check_qtys(); updateValues(InitialQty$key,RestockQty$key,SoldQty$key,RemainingQty$key);'/>
                             </div>
                             <div class='col-sm-2 mt-auto'>
                                 <label for='PurchasedQty$key'> Purchased Qty: </label> 
-                                <input type='number'class='form-control' id='SoldQty$key' name='SoldQty$key' value='$SoldQty' min='1' readonly/>
+                                <input type='number'class='form-control' id='SoldQty$key' name='SoldQty$key' value='$SoldQty' min='0' readonly/>
                             </div>
                             <div class='col-sm-2 mt-auto'>
                                 <label for='RemainingQty$key'> Remaining Qty: </label> 
@@ -91,7 +100,7 @@ $OffSiteItems = $crud->getData($query);
                             <div class='col-sm-4 mt-auto' >
                                 <label for='ItemName$key'>Item Name: </label>
                                 <input type='hidden' name='ItemID$key' value='$ItemID' />
-                                <input type='text' class='form-control name='ItemName$key' value='$ItemName' readonly/>
+                                <input type='text' class='form-control' id='ItemName$key' name='ItemName$key' value='$ItemName' readonly/>
                             </div>
                             <div class='col-sm-2 mt-auto '>
                                 <label for='StartQty$key'> Initial Qty: </label> 
@@ -103,7 +112,7 @@ $OffSiteItems = $crud->getData($query);
                             </div>
                             <div class='col-sm-2 mt-auto'>
                                 <label for='PurchasedQty$key'> Purchased Qty: </label> 
-                                <input type='number'class='form-control' id='SoldQty$key' name='SoldQty$key' value='$SoldQty' min='1' onchange='updateValues(InitialQty$key,RestockQty$key,SoldQty$key,RemainingQty$key);' />
+                                <input type='number'class='form-control' id='SoldQty$key' name='SoldQty$key' value='$SoldQty' min='1' onchange='check_qtys(); updateValues(InitialQty$key,RestockQty$key,SoldQty$key,RemainingQty$key);' />
                             </div>
                             <div class='col-sm-2 mt-auto'>
                                 <label for='RemainingQty$key'> Remaining Qty: </label> 
@@ -128,6 +137,34 @@ $OffSiteItems = $crud->getData($query);
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
     <script> 
+
+
+        function check_qtys()
+        {
+            for (i = 0; i < number_of_items; i++)
+            {
+                itemName = document.getElementById('ItemName'+i).value;
+                restockQty = document.getElementById('RestockQty'+i).value;
+                soldQty = document.getElementById('SoldQty'+i).value;
+                initialQty = document.getElementById('InitialQty'+i).value;
+
+                console.log(number_of_items);
+                if (parseInt(restockQty) > onHandQtys[i])
+                {
+                    console.log("it worked!");
+                    bootbox.alert(itemName + " has " + restockQty + " selected, but  there is only " + onHandQtys[i] + " available.");
+                    //console.log(itemNames[selected] + "has " + quantity + " selected, but  there is only " + onHandQtys[selected] + " available");
+                    document.getElementById('RestockQty'+i).value = onHandQtys[i];
+                }
+
+                var can_sell = parseInt(initialQty)+parseInt(restockQty);
+                if ((parseInt(soldQty)) > (can_sell))
+                {
+                    bootbox.alert(itemName + " has " + soldQty + " selected, but  there is only " + can_sell + " available for sale. If you want to sell more here, then restock this inventory.");
+                    document.getElementById('SoldQty'+i).value = can_sell;
+                }
+            }
+        }
 
         function updateValues(id1,id2,id3,id4)
         {

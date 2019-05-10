@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <!-- Brand -->
-    <a class="navbar-brand" href="#">Etsy Inventory Tracker</a>
+    <a class="navbar-brand mr-3" href="#">Etsy Inventory Tracker</a>
 
     <!-- Links -->
     <ul class="navbar-nav ml-auto">
@@ -11,7 +11,7 @@
             <a class="nav-link" href="offsite_inventory.php" > OffSite Inventories </a>
         </li>
         <li class="nav-item ml-auto">
-            <a class="nav-link" href="#" >Logout <i class="fas fa-sign-out-alt"></i></a>
+            <a class="nav-link" href="logout.php" >Logout <i class="fas fa-sign-out-alt"></i></a>
         </li>
     </ul>
 </nav>

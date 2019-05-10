@@ -1,4 +1,33 @@
 <?php
+class DbConfig
+{
+    private $_host = "localhost:3308";
+    private $_username = "ibalukt";
+    private $_password = "GipperTheDog";
+    private $_database = "laurens_data";
+    protected $connection;
+
+    public function __construct()
+    {
+        if (!isset($this->connection)) {
+            $this->connection = new mysqli($this->_host,
+                                           $this->_username,
+                                           $this->_password,
+                                           $this->_database);
+
+        }
+
+        if (!$this->connection) {
+            echo 'Cannot connect to database server';
+            exit;
+        }
+
+        return $this->connection;
+    }
+
+}
+
+<?php
 include_once 'DbConfig.php';
 
 class Crud extends DbConfig
@@ -70,26 +99,6 @@ class Crud extends DbConfig
         return $rows;
     }
 
-    public function prep_getData($query,$types,$params)
-    {
-        $stmt = $this->connection->prepare($query);
-
-        $stmt->bind_param($types, ...$params);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $result = (mysqli_fetch_array($result));
-        if (mysqli_stmt_affected_rows($stmt)==0) {
-            echo 'Error: cannot execute the command <br/>';
-            return false;
-        }
-        else
-        {
-            echo 'Success! <br/>';
-            return $result;
-        }
-
-    }
-
     public function execute($query)
     {
         $result = $this->connection->query($query);
@@ -112,7 +121,7 @@ class Crud extends DbConfig
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $result = $stmt->get_result();
-       // $result = (mysqli_fetch_array($result));
+        echo mysqli_stmt_affected_rows($stmt);
         if (mysqli_stmt_affected_rows($stmt)==0) {
             echo 'Error: cannot execute the command <br/>';
             return false;
@@ -120,7 +129,7 @@ class Crud extends DbConfig
         else
         {
             echo 'Success! <br/>';
-            return $result;
+            return ;
         }
     }
 
@@ -234,3 +243,4 @@ class Crud extends DbConfig
         return $today;
     }
 }
+?>

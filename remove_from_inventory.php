@@ -1,9 +1,10 @@
 <?php 
+include_once('session_check.php');
 include_once('classes/DbConfig.php');
 include_once('classes/Crud.php');
 $crud = new crud();
 
-    if (isset($_POST['submit']))
+    if (isset($_POST['is_submitted']))
     {
         //Number of Items Being Removed
         $num_items = $crud->escape_string($_POST['num_items']);
@@ -26,10 +27,10 @@ $crud = new crud();
         //$GoingWhere = strtolower($GoingWhere);
 
         echo"1<br/>";
-        $query ="INSERT INTO OffSite (ReasonID,GoingWhere,State) VALUES(?,?,?)";
-        $params = array($ReasonID,$GoingWhere,0);
+        $query ="INSERT INTO OffSite (ReasonID,GoingWhere) VALUES(?,?)";
+        $params = array($ReasonID,$GoingWhere);
 
-        $crud->prep_execute($query,"isi",$params);
+        $crud->prep_execute($query,"is",$params);
         echo "2<br/>";
         //Get the Last Id that was inserted into the TAction Table
         $OffSiteID = $crud->last_insert_id();
@@ -72,6 +73,7 @@ $crud = new crud();
     }
     else
     {
+        //echo var_dump($_POST);
         echo "It isn't working";
     }
 ?>
